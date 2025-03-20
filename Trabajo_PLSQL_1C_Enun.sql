@@ -58,8 +58,50 @@ create or replace procedure registrar_pedido(
     arg_id_primer_plato INTEGER DEFAULT NULL,
     arg_id_segundo_plato INTEGER DEFAULT NULL
 ) is 
+ --Declaración de excepciones
+ PLATOS_NO_DISPONIBLES  exception;      -- Se lanza no hay platos disponibles.
+ PRAGMA EXCEPTION_INIT(PLATOS_NO_DISPONIBLES, -20001);
+ 
+ PEDIDO_SIN_PLATO   exception;       -- Se lanza en caso de que el pedido no contenga ningun plato.
+ PRAGMA EXCEPTION_INIT(PEDIDO_SIN_PLATO, -20002);
+ 
+ MUCHO_OCUPADO  exception;      -- Se lanza si el personal ha cubierto el cupo maximo de pedidos ## Tu ah muy mucho ocupado ##.
+ PRAGMA EXCEPTION_INIT(MUCHO_OCUPADO, -20003);
+ 
+ NO_EXISTE_1    exception;     --Se lanza si el plato 1 no exisite.
+ PRAGMA EXCEPTION_INIT(NO_EXISTE_1, -20004);
+
+ NO_EXISITE_2   exception;     --Se lanza si el plato 2 no exisite
+ PRAGMA EXCEPTION_INIT(NO_EXISITE_2, -20004);
+
  begin
-  null; -- sustituye esta línea por tu código
+    begin
+    SELECT * FROM clientes
+  -- Codigo AQUI
+  -- NOTE: esto va al final del todo, despues de todo el codigo, faltaría adaptarlo a las necesidades del codigo
+  -- Captura de las excepciones lanzadas.
+  commit;
+  exception
+  when PLATOS_NO_DISPONIBLES then
+    rollback;
+    raise_application_error(-20001,'Uno de los platos seleccionados no está disponible.');
+    
+  when PEDIDO_SIN_PLATO then
+    raise_application_error(-20002, 'El pedido deber contener al menos un plato.');
+        
+  when MUCHO_OCUPADO then
+    raise_application_error(-20003, 'El personal de servicio tiene demasiados pedidos');
+
+  when NO_EXISTE_1 then
+    raise_application_error(-20004, 'El primer plato seleccionado no exisite');
+
+  when NO_EXISTE_2 then
+    raise_application_error(-20004, 'El segundo plato seleccionado no exisite');
+    
+  when others then 
+    rollback;
+    raise;
+  end;
 end;
 /
 
