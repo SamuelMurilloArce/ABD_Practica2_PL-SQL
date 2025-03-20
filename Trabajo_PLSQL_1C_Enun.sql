@@ -31,7 +31,7 @@ CREATE TABLE platos (
     id_plato INTEGER PRIMARY KEY,
     nombre VARCHAR2(100) NOT NULL,
     precio DECIMAL(10, 2) NOT NULL,
-    disponible BOOLEAN DEFAULT TRUE
+    disponible INTEGER DEFAULT 1 CHECK (DISPONIBLE in (0,1)) -- 0 Falso, 1 True
 );
 
 CREATE TABLE pedidos (
@@ -71,12 +71,47 @@ create or replace procedure registrar_pedido(
  NO_EXISTE_1    exception;     --Se lanza si el plato 1 no exisite.
  PRAGMA EXCEPTION_INIT(NO_EXISTE_1, -20004);
 
- NO_EXISITE_2   exception;     --Se lanza si el plato 2 no exisite
- PRAGMA EXCEPTION_INIT(NO_EXISITE_2, -20004);
+ NO_EXISTE_2   exception;     --Se lanza si el plato 2 no exisite
+ PRAGMA EXCEPTION_INIT(NO_EXISTE_2, -20004);
 
+ disponibilidad_plato1 integer:=2; -- 0 Falso, 1 True, 2 no exisite plato
+ disponibilidad_plato2 integer:=2; -- 0 Falso, 1 True, 2 no exisite plato
  begin
-    begin
-    SELECT * FROM clientes
+
+  begin
+   -- Comprobamos si esta disponible el plato 1
+   SELECT disponible as disponibilidad_plato1
+   FROM platos
+   WHERE id_plato = arg_id_primer_plato;
+ 
+   -- Comprobamos si esta disponible el plato 2
+   SELECT disponible as disponibilidad_plato2
+   FROM platos
+   WHERE id_plato = arg_id_segundo_plato;
+
+   -- Except 1 y 4 plato 1
+    if arg_id_primer_plato != NULL then
+   
+        if arg_id_primer_plato = 0 then
+            raise PLATOS_NO_DISPONIBLES;
+        end if;
+
+    else
+        raise NO_EXISTE_1;
+    end if;
+   
+   -- Except 1 y 4 plato 2
+    if arg_id_segundo_plato != NULL then 
+
+        if arg_id_segundo_plato = 0 then
+            raise PLATOS_NO_DISPONIBLES;
+        end if;
+
+    else
+        raise NO_EXISTE_2;
+    end if;
+
+
   -- Codigo AQUI
   -- NOTE: esto va al final del todo, despues de todo el codigo, faltaría adaptarlo a las necesidades del codigo
   -- Captura de las excepciones lanzadas.
