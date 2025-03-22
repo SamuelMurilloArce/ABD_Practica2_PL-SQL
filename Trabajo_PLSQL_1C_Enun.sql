@@ -76,6 +76,8 @@ create or replace procedure registrar_pedido(
 
  disponibilidad_plato1 integer:=2; -- 0 Falso, 1 True, 2 no exisite plato
  disponibilidad_plato2 integer:=2; -- 0 Falso, 1 True, 2 no exisite plato
+ arg_id_pedido integer;
+ arg_total decimal(10,2):=0;
  begin
 
   begin
@@ -110,7 +112,17 @@ create or replace procedure registrar_pedido(
     else
         raise NO_EXISTE_2;
     end if;
-
+    
+    --Añadimos el pedido a la tabla pedidos
+    insert into pedidos values(arg_id_pedido, arg_id_cliente, arg_id_personal, SYSDATE, arg_total);
+    --Añadimos los detalles de pedido a la tabla detalle_pedido
+    insert into detalle_pedido values(arg_id_pedido, );
+    --Actualizamos la tabla personal_servicio
+    update personal_servicio
+    set pedidos_activos = pedidos_activos+1
+    where id_personal = arg_id_personal;
+    
+    COMMIT;
 
   -- Codigo AQUI
   -- NOTE: esto va al final del todo, despues de todo el codigo, faltaría adaptarlo a las necesidades del codigo
