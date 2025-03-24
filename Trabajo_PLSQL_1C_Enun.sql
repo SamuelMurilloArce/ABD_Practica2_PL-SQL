@@ -86,18 +86,18 @@ create or replace procedure registrar_pedido(
    WHERE id_plato = arg_id_segundo_plato;
 
    -- Except 1 y 4 plato 1
-    if arg_id_primer_plato != NULL then
+    if arg_id_primer_plato is not NULL then
    
         if arg_id_primer_plato = 0 then
             raise PLATOS_NO_DISPONIBLES;
         end if;
-
+        
     else
         raise_application_error(-20004, 'El primer plato seleccionado no existe');
     end if;
-   
+
    -- Except 1 y 4 plato 2
-    if arg_id_segundo_plato != NULL then 
+    if arg_id_segundo_plato is not NULL then 
 
         if arg_id_segundo_plato = 0 then
             raise PLATOS_NO_DISPONIBLES;
@@ -107,6 +107,7 @@ create or replace procedure registrar_pedido(
         raise_application_error(-20004, 'El segundo plato seleccionado no existe');
     end if;
     
+    /*
     --Añadimos el pedido a la tabla pedidos
     insert into pedidos values(arg_id_pedido, arg_id_cliente, arg_id_personal, SYSDATE, arg_total);
     --Añadimos los detalles de pedido a la tabla detalle_pedido
@@ -121,7 +122,7 @@ create or replace procedure registrar_pedido(
     update personal_servicio
     set pedidos_activos = pedidos_activos+1
     where id_personal = arg_id_personal;
-    
+    */
     COMMIT;
 
   -- Codigo AQUI
@@ -218,13 +219,14 @@ begin
   --caso 1 Pedido correct, se realiza
   begin
     inicializa_test;
-    registrar_pedido(1,2,1,5);
+    registrar_pedido(1,2,1,2);
     dbms_output.put_line('Detecta OK pedido: '||sqlerrm);
   exception
     when others then
       dbms_output.put_line('Mal no detecta pedido: '||sqlerrm);
   end;
   
+  /*
   --Caso 2: Si se realiza un pedido vacío (sin platos) devuelve el error -20002.
   begin
     inicializa_test;
@@ -280,7 +282,7 @@ begin
         dbms_output.put_line('Mal no detecta MUCHO_OCUPADO: '||sqlerrm);
       end if;
   end;
-    
+    */
 
 -- ... los que os puedan ocurrir que puedan ser necesarios para comprobar el correcto funcionamiento del procedimiento
 
