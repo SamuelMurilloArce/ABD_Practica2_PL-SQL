@@ -76,12 +76,12 @@ create or replace procedure registrar_pedido(
 
   begin
    -- Comprobamos si esta disponible el plato 1
-   SELECT disponible as disponibilidad_plato1
+   SELECT disponible into disponibilidad_plato1
    FROM platos
    WHERE id_plato = arg_id_primer_plato;
  
    -- Comprobamos si esta disponible el plato 2
-   SELECT disponible as disponibilidad_plato2
+   SELECT disponible into disponibilidad_plato2
    FROM platos
    WHERE id_plato = arg_id_segundo_plato;
 
