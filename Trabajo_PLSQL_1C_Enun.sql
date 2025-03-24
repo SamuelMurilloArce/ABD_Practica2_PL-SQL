@@ -230,17 +230,72 @@ begin
   --caso 1 Pedido correct, se realiza
   begin
     inicializa_test;
+    registrar_pedido(1,2,1,5);
+    dbms_output.put_line('Detecta OK pedido: '||sqlerrm);
+  exception
+    when others then
+      dbms_output.put_line('Mal no detecta pedido: '||sqlerrm);
   end;
   
-  -- Idem para el resto de casos
+  --Caso 2: Si se realiza un pedido vacío (sin platos) devuelve el error -20002.
+  begin
+    inicializa_test;
+    registrar_pedido(1,2,NULL,NULL);
+    dbms_output.put_line('Mal no detecta PEDIDO_SIN_PLATO');
+  exception
+    when others then
+      if sqlcode = -20002 then
+        dbms_output.put_line('Detecta OK PEDIDO_SIN_PLATO: '||sqlerrm);
+      else
+        dbms_output.put_line('Mal no detecta PEDIDO_SIN_PLATO: '||sqlerrm);
+      end if;
+  end;
 
-  /* - Si se realiza un pedido vac´ıo (sin platos) devuelve el error -200002.
-     - Si se realiza un pedido con un plato que no existe devuelve en error -20004.
-     - Si se realiza un pedido que incluye un plato que no est´a ya disponible devuelve el error -20001.
-     - Personal de servicio ya tiene 5 pedidos activos y se le asigna otro pedido devuelve el error -20003
-     - ... los que os puedan ocurrir que puedan ser necesarios para comprobar el correcto funcionamiento del procedimiento
-*/
+  --Caso 3: Si se realiza un pedido con un plato que no existe devuelve en error -20004.
+  begin
+    inicializa_test;
+    registrar_pedido(1,2,87,NULL);
+    dbms_output.put_line('Mal no detecta PLATO_INEXISTENTE');
+  exception
+    when others then
+      if sqlcode = -20004 then
+        dbms_output.put_line('Detecta OK PLATO_INEXISTENTE: '||sqlerrm);
+      else
+        dbms_output.put_line('Mal no detecta PLATO_INEXISTENTE: '||sqlerrm);
+      end if;
+  end;
+
+  --Caso 4: Si se realiza un pedido que incluye un plato que no est´a ya disponible devuelve el error -20001.
+  begin
+    inicializa_test;
+    registrar_pedido(1,1,3,NULL);
+    dbms_output.put_line('Mal no detecta PLATOS_NO_DISPONIBLES');
+  exception
+    when others then
+      if sqlcode = -20001 then
+        dbms_output.put_line('Detecta OK PLATOS_NO_DISPONIBLES: '||sqlerrm);
+      else
+        dbms_output.put_line('Mal no detecta PLATOS_NO_DISPONIBLES: '||sqlerrm);
+      end if;
+  end;
   
+  --Caso 5: Personal de servicio ya tiene 5 pedidos activos y se le asigna otro pedido devuelve el error -20003
+  begin
+    inicializa_test;
+    registrar_pedido(1,2,1,2);
+    dbms_output.put_line('Mal no detecta MUCHO_OCUPADO');
+  exception
+    when others then
+      if sqlcode = -20003 then
+        dbms_output.put_line('Detecta OK MUCHO_OCUPADO: '||sqlerrm);
+      else
+        dbms_output.put_line('Mal no detecta MUCHO_OCUPADO: '||sqlerrm);
+      end if;
+  end;
+    
+
+-- ... los que os puedan ocurrir que puedan ser necesarios para comprobar el correcto funcionamiento del procedimiento
+
 end;
 /
 
