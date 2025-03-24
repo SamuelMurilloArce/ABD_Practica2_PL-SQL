@@ -67,12 +67,6 @@ create or replace procedure registrar_pedido(
  
  MUCHO_OCUPADO  exception;      -- Se lanza si el personal ha cubierto el cupo maximo de pedidos ## Tu ah muy mucho ocupado ##.
  PRAGMA EXCEPTION_INIT(MUCHO_OCUPADO, -20003);
- 
- NO_EXISTE_1    exception;     --Se lanza si el plato 1 no exisite.
- PRAGMA EXCEPTION_INIT(NO_EXISTE_1, -20004);
-
- NO_EXISTE_2   exception;     --Se lanza si el plato 2 no exisite
- PRAGMA EXCEPTION_INIT(NO_EXISTE_2, -20004);
 
  disponibilidad_plato1 integer:=2; -- 0 Falso, 1 True, 2 no exisite plato
  disponibilidad_plato2 integer:=2; -- 0 Falso, 1 True, 2 no exisite plato
@@ -99,7 +93,7 @@ create or replace procedure registrar_pedido(
         end if;
 
     else
-        raise NO_EXISTE_1;
+        raise_application_error(-20004, 'El primer plato seleccionado no existe')
     end if;
    
    -- Except 1 y 4 plato 2
@@ -110,7 +104,7 @@ create or replace procedure registrar_pedido(
         end if;
 
     else
-        raise NO_EXISTE_2;
+        raise_application_error(-20004, 'El segundo plato seleccionado no existe');
     end if;
     
     --Añadimos el pedido a la tabla pedidos
@@ -144,12 +138,6 @@ create or replace procedure registrar_pedido(
         
   when MUCHO_OCUPADO then
     raise_application_error(-20003, 'El personal de servicio tiene demasiados pedidos');
-
-  when NO_EXISTE_1 then
-    raise_application_error(-20004, 'El primer plato seleccionado no existe');
-
-  when NO_EXISTE_2 then
-    raise_application_error(-20004, 'El segundo plato seleccionado no existe');
     
   when others then 
     rollback;
