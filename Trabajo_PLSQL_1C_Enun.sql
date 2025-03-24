@@ -116,7 +116,13 @@ create or replace procedure registrar_pedido(
     --Añadimos el pedido a la tabla pedidos
     insert into pedidos values(arg_id_pedido, arg_id_cliente, arg_id_personal, SYSDATE, arg_total);
     --Añadimos los detalles de pedido a la tabla detalle_pedido
-    insert into detalle_pedido values(arg_id_pedido, );
+    if arg_id_primer_plato is not null then
+    insert into detalle_pedido values(arg_id_pedido,arg_id_primer_plato, 1);
+    end if;
+    
+    if arg_id_segundo_plato is not null then
+    insert into detalle_pedido values(arg_id_pedido, arg_id_segundo_plato, 1); -- Cantidad fija en 1, ajustar si es necesario
+    end if;
     --Actualizamos la tabla personal_servicio
     update personal_servicio
     set pedidos_activos = pedidos_activos+1
@@ -140,10 +146,10 @@ create or replace procedure registrar_pedido(
     raise_application_error(-20003, 'El personal de servicio tiene demasiados pedidos');
 
   when NO_EXISTE_1 then
-    raise_application_error(-20004, 'El primer plato seleccionado no exisite');
+    raise_application_error(-20004, 'El primer plato seleccionado no existe');
 
   when NO_EXISTE_2 then
-    raise_application_error(-20004, 'El segundo plato seleccionado no exisite');
+    raise_application_error(-20004, 'El segundo plato seleccionado no existe');
     
   when others then 
     rollback;
