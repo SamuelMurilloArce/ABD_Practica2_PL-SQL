@@ -75,36 +75,40 @@ create or replace procedure registrar_pedido(
  begin
 
   begin
-   -- Comprobamos si esta disponible el plato 1
-   SELECT disponible into disponibilidad_plato1
-   FROM platos
-   WHERE id_plato = arg_id_primer_plato;
- 
-   -- Comprobamos si esta disponible el plato 2
-   SELECT disponible into disponibilidad_plato2
-   FROM platos
-   WHERE id_plato = arg_id_segundo_plato;
-
-   -- Except 1 y 4 plato 1
-    if arg_id_primer_plato is not NULL then
-   
-        if arg_id_primer_plato = 0 then
-            raise PLATOS_NO_DISPONIBLES;
-        end if;
-        
-    else
-        raise_application_error(-20004, 'El primer plato seleccionado no existe');
+   if arg_id_primer_plato is null and arg_id_segundo_plato is null then
+        raise PEDIDO_SIN_PLATO;
+   end if;
+    
+   if arg_id_primer_plato is not null then 
+        begin
+            SELECT disponible into disponibilidad_plato1
+              FROM platos
+             WHERE id_plato = arg_id_primer_plato;
+        exception
+            when NO_DATA_FOUND then
+                raise_application_error(-20004, 'El primer plato seleccionado no existe');
+        end;
     end if;
-
-   -- Except 1 y 4 plato 2
-    if arg_id_segundo_plato is not NULL then 
-
-        if arg_id_segundo_plato = 0 then
-            raise PLATOS_NO_DISPONIBLES;
-        end if;
-
-    else
-        raise_application_error(-20004, 'El segundo plato seleccionado no existe');
+    
+  -- Verificar el segundo plato
+    if arg_id_segundo_plato is not null then
+        begin
+            SELECT disponible into disponibilidad_plato2
+              FROM platos
+             WHERE id_plato = arg_id_segundo_plato;
+        exception
+            when NO_DATA_FOUND then
+                raise_application_error(-20004, 'El segundo plato seleccionado no existe');
+        end;
+    end if;
+    
+    -- Comprobar la disponibilidad de los platos
+    if disponibilidad_plato1 = 0 then
+        raise PLATOS_NO_DISPONIBLES;
+    end if;
+    
+    if disponibilidad_plato2 = 0 then
+        raise PLATOS_NO_DISPONIBLES;
     end if;
     
     /*
@@ -226,11 +230,11 @@ begin
       dbms_output.put_line('Mal no detecta pedido: '||sqlerrm);
   end;
   
-  /*
+  
   --Caso 2: Si se realiza un pedido vacío (sin platos) devuelve el error -20002.
   begin
     inicializa_test;
-    registrar_pedido(1,2,NULL,NULL);
+    registrar_pedido(1,2);
     dbms_output.put_line('Mal no detecta PEDIDO_SIN_PLATO');
   exception
     when others then
@@ -240,7 +244,7 @@ begin
         dbms_output.put_line('Mal no detecta PEDIDO_SIN_PLATO: '||sqlerrm);
       end if;
   end;
-
+/*
   --Caso 3: Si se realiza un pedido con un plato que no existe devuelve en error -20004.
   begin
     inicializa_test;
