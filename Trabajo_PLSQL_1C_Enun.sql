@@ -93,7 +93,7 @@ create or replace procedure registrar_pedido(
         end if;
 
     else
-        raise_application_error(-20004, 'El primer plato seleccionado no existe')
+        raise_application_error(-20004, 'El primer plato seleccionado no existe');
     end if;
    
    -- Except 1 y 4 plato 2
@@ -200,9 +200,9 @@ begin
     insert into Personal_servicio (id_personal, nombre, apellido, pedidos_activos) values (1, 'Carlos', 'Lopez', 0);
     insert into Personal_servicio (id_personal, nombre, apellido, pedidos_activos) values (2, 'Maria', 'Fernandez', 5);
     
-    insert into Platos (id_plato, nombre, precio, disponible) values (1, 'Sopa', 10.0, TRUE);
-    insert into Platos (id_plato, nombre, precio, disponible) values (2, 'Pasta', 12.0, TRUE);
-    insert into Platos (id_plato, nombre, precio, disponible) values (3, 'Carne', 15.0, FALSE);
+    insert into Platos (id_plato, nombre, precio, disponible) values (1, 'Sopa', 10.0, 1);
+    insert into Platos (id_plato, nombre, precio, disponible) values (2, 'Pasta', 12.0, 1);
+    insert into Platos (id_plato, nombre, precio, disponible) values (3, 'Carne', 15.0, 0);
 
     commit;
 end;
