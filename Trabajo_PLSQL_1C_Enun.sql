@@ -220,7 +220,7 @@ exec inicializa_test;
 create or replace procedure test_registrar_pedido is
 begin
 	 
-  --caso 1 Pedido correct, se realiza
+  --Caso 1 Pedido correct, se realiza
   begin
     inicializa_test;
     registrar_pedido(1,2,1,2);
@@ -244,8 +244,9 @@ begin
         dbms_output.put_line('Mal no detecta PEDIDO_SIN_PLATO: '||sqlerrm);
       end if;
   end;
-/*
+  
   --Caso 3: Si se realiza un pedido con un plato que no existe devuelve en error -20004.
+  --Caso 3.1 --> no exisite el plato 1
   begin
     inicializa_test;
     registrar_pedido(1,2,87,NULL);
@@ -258,7 +259,50 @@ begin
         dbms_output.put_line('Mal no detecta PLATO_INEXISTENTE: '||sqlerrm);
       end if;
   end;
+  
+  -- Caso 3.2 --> No exisite el plato 2
+  begin
+    inicializa_test;
+    registrar_pedido(1,2,NULL,100);
+    dbms_output.put_line('Mal no detecta PLATO_INEXISTENTE');
+  exception
+    when others then
+      if sqlcode = -20004 then
+        dbms_output.put_line('Detecta OK PLATO_INEXISTENTE: '||sqlerrm);
+      else
+        dbms_output.put_line('Mal no detecta PLATO_INEXISTENTE: '||sqlerrm);
+      end if;
+  end;
+  
+  -- Caso 3.3 --> Exisite el plato 2 pero no el 1
+  begin
+    inicializa_test;
+    registrar_pedido(1,2,87,1);
+    dbms_output.put_line('Mal no detecta PLATO_INEXISTENTE');
+  exception
+    when others then
+      if sqlcode = -20004 then
+        dbms_output.put_line('Detecta OK PLATO_INEXISTENTE: '||sqlerrm);
+      else
+        dbms_output.put_line('Mal no detecta PLATO_INEXISTENTE: '||sqlerrm);
+      end if;
+  end;
+  
+  -- Caso 3.4 --> Exisite el plato 1 pero no el 2
+  begin
+    inicializa_test;
+    registrar_pedido(1,2,1,100);
+    dbms_output.put_line('Mal no detecta PLATO_INEXISTENTE');
+  exception
+    when others then
+      if sqlcode = -20004 then
+        dbms_output.put_line('Detecta OK PLATO_INEXISTENTE: '||sqlerrm);
+      else
+        dbms_output.put_line('Mal no detecta PLATO_INEXISTENTE: '||sqlerrm);
+      end if;
+  end;
 
+/*
   --Caso 4: Si se realiza un pedido que incluye un plato que no est´a ya disponible devuelve el error -20001.
   begin
     inicializa_test;
