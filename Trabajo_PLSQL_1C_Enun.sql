@@ -72,6 +72,7 @@ create or replace procedure registrar_pedido(
  disponibilidad_plato2 integer:=2; -- 0 Falso, 1 True, 2 no exisite plato
  arg_id_pedido integer;
  arg_total decimal(10,2):=0;
+ disp_servicio integer;
  begin
 
   begin
@@ -111,9 +112,22 @@ create or replace procedure registrar_pedido(
         raise PLATOS_NO_DISPONIBLES;
     end if;
     
-    /*
+    
     --Añadimos el pedido a la tabla pedidos
+    BEGIN
+    Select MAX(id_pedido) into arg_id_pedido
+        FROM pedidos;
+    END;
+    
+    -- Esto se puede cambiar por un "NVL(MAX(id_pedido), 0) + 1" en el propio select, pero como no lo hemos dado asi se queda
+    if arg_id_pedido is NULL then
+        arg_id_pedido := 1;
+    else
+        arg_id_pedido := arg_id_pedido + 1;
+    end if;
+    
     insert into pedidos values(arg_id_pedido, arg_id_cliente, arg_id_personal, SYSDATE, arg_total);
+    
     --Añadimos los detalles de pedido a la tabla detalle_pedido
     if arg_id_primer_plato is not null then
     insert into detalle_pedido values(arg_id_pedido,arg_id_primer_plato, 1);
@@ -122,17 +136,28 @@ create or replace procedure registrar_pedido(
     if arg_id_segundo_plato is not null then
     insert into detalle_pedido values(arg_id_pedido, arg_id_segundo_plato, 1); -- Cantidad fija en 1, ajustar si es necesario
     end if;
+
     --Actualizamos la tabla personal_servicio
-    update personal_servicio
-    set pedidos_activos = pedidos_activos+1
-    where id_personal = arg_id_personal;
-    */
+    BEGIN
+        SELECT pedidos_activos into disp_servicio
+        FROM personal_servicio
+        WHERE id_personal = arg_id_personal;
+    END;
+
+    if disp_servicio >= 5 then
+        raise MUCHO_OCUPADO;
+    else
+        update personal_servicio
+        set pedidos_activos = pedidos_activos+1
+        where id_personal = arg_id_personal;
+    end if;
+    
     COMMIT;
+    
 
   -- Codigo AQUI
   -- NOTE: esto va al final del todo, despues de todo el codigo, faltaría adaptarlo a las necesidades del codigo
   -- Captura de las excepciones lanzadas.
-  commit;
   exception
   when PLATOS_NO_DISPONIBLES then
     rollback;
@@ -150,6 +175,7 @@ create or replace procedure registrar_pedido(
   end;
 end;
 /
+
 
 ------ Deja aquí tus respuestas a las preguntas del enunciado:
 -- NO SE CORREGIRÁN RESPUESTAS QUE NO ESTÉN AQUÍ (utiliza el espacio que necesites apra cada una)
@@ -169,7 +195,7 @@ end;
     SELECT pedidos_activos INTO pedidos_actuales 
     FROM personal_servicio 
     WHERE id_personal = arg_id_personal
-    FOR UPDATE;  -- 🔒 Bloquea la fila hasta que se haga COMMIT o ROLLBACK
+    FOR UPDATE;  -- Bloquea la fila hasta que se haga COMMIT o ROLLBACK
 
     IF pedidos_actuales >= 5 THEN
         raise MUCHO_OCUPADO;
@@ -243,14 +269,14 @@ end;
 -- * P4.5
 /* 1. Programación Defensiva
    Esta estrategia se basa en anticipar posibles errores y validar condiciones antes de ejecutar operaciones críticas. Se puede ver en el código en los siguientes aspectos:
-✅   Validaciones antes de insertar datos:
+   Validaciones antes de insertar datos:
 
    Se comprueba que al menos un plato sea seleccionado antes de procesar el pedido.
 
    Se verifica si los platos existen y si están disponibles antes de agregarlos al pedido.
 
    Se valida si el personal de servicio ya tiene 5 pedidos activos antes de asignarle uno nuevo.
-✅   Gestión de excepciones personalizadas:
+   Gestión de excepciones personalizadas:
 
    Se han definido excepciones específicas como PLATOS_NO_DISPONIBLES, PEDIDO_SIN_PLATO y MUCHO_OCUPADO para manejar errores esperados de manera estructurada.
 
@@ -265,6 +291,7 @@ end;
 
    4. Manejo de excepciones SQL (WHEN OTHERS THEN ... IF SQLCODE = -2290 THEN ...).
 */ 
+
 
 
 create or replace
@@ -325,7 +352,7 @@ begin
   --Caso 1 Pedido correct, se realiza
   begin
     inicializa_test;
-    registrar_pedido(1,2,1,2);
+    registrar_pedido(1,1,1,2);
     dbms_output.put_line('Detecta OK pedido: '||sqlerrm);
   exception
     when others then
@@ -432,7 +459,7 @@ begin
         dbms_output.put_line('Mal no detecta PLATOS_NO_DISPONIBLES: '||sqlerrm);
       end if;
   end;
-  /*
+
   --Caso 5: Personal de servicio ya tiene 5 pedidos activos y se le asigna otro pedido devuelve el error -20003
   begin
     inicializa_test;
@@ -446,7 +473,7 @@ begin
         dbms_output.put_line('Mal no detecta MUCHO_OCUPADO: '||sqlerrm);
       end if;
   end;
-    */
+
 
 -- ... los que os puedan ocurrir que puedan ser necesarios para comprobar el correcto funcionamiento del procedimiento
 
