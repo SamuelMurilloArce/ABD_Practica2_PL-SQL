@@ -193,7 +193,53 @@ end;
    Cuando nuestra transacción intenta hacer su commit, el empleado ya tiene 5 pedidos activos (o más), lo que lleva a una inconsistencia.
 */
 -- * P4.4
---
+/* Si añadimos la restricción CHECK (pedidos_activos ≤ 5) en la tabla personal_servicio, esto garantizaría a nivel de base de datos que un miembro del personal no pueda tener más de 5 pedidos activos.
+   Sin embargo, esta restricción no evita completamente los problemas de concurrencia y podría generar errores inesperados en nuestro código.
+   1. La restricción CHECK actúa como última barrera
+
+   Si dos transacciones intentan asignar pedidos al mismo empleado de manera simultánea y superan el límite, una de ellas fallará cuando intente hacer el UPDATE en la tabla personal_servicio.
+
+   Se generará un error de integridad en la base de datos cuando una de las transacciones intente guardar un sexto pedido.
+   
+   2. No evita condiciones de carrera
+
+   La restricción CHECK solo se valida al momento del UPDATE, pero no evita que dos transacciones concurrentes lean el mismo número de pedidos activos antes de la actualización,
+   lo que aún puede provocar inconsistencias.
+
+   Es necesario un mecanismo adicional para manejar esta situación correctamente.
+   
+   3.Cambio en la gestión de excepciones
+
+   Actualmente, la excepción MUCHO_OCUPADO (-20003) se lanza en nuestro código antes de actualizar la base de datos.
+
+   Con la nueva restricción CHECK, debemos capturar el error de la base de datos cuando ocurra un UPDATE inválido e interpretar el error de integridad como una nueva versión de MUCHO_OCUPADO.
+   
+   
+   Modificaciones necesarias en el código
+   1. Capturar el error de violación de CHECK
+
+   En el bloque EXCEPTION, deberíamos interceptar la excepción generada por la base de datos cuando la restricción CHECK falle y lanzar nuestra propia excepción personalizada.
+
+   2. Bloqueo preventivo para evitar concurrencia
+
+   Antes de asignar el pedido, debemos bloquear la fila del personal de servicio (SELECT ... FOR UPDATE) para evitar que otras transacciones lean y modifiquen la misma información al mismo tiempo.
+   
+   BLOQUEO DE LA FILA DEL EMPLEADO
+   SELECT pedidos_activos 
+   INTO pedidos_actuales 
+   FROM personal_servicio 
+   WHERE id_personal = arg_id_personal
+   FOR UPDATE;
+   
+   MANEJO DE LA EXCEPCIÓN POR LA VILOACIÓN DEL CHECK
+   EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -2290 THEN -- Código de error de restricción CHECK
+            RAISE_APPLICATION_ERROR(-20003, 'El personal de servicio tiene demasiados pedidos');
+        ELSE
+            RAISE;
+        END IF;
+*/
 -- * P4.5
 -- 
 
