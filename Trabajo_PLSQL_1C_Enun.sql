@@ -302,8 +302,8 @@ begin
       end if;
   end;
 
-/*
   --Caso 4: Si se realiza un pedido que incluye un plato que no est´a ya disponible devuelve el error -20001.
+  --Caso 4.1 --> plato null y plato no disponible
   begin
     inicializa_test;
     registrar_pedido(1,1,3,NULL);
@@ -317,6 +317,20 @@ begin
       end if;
   end;
   
+  --Caso 4.2 --> Plato no disponible, y plato disponible
+  begin
+    inicializa_test;
+    registrar_pedido(1,1,3,1);
+    dbms_output.put_line('Mal no detecta PLATOS_NO_DISPONIBLES');
+  exception
+    when others then
+      if sqlcode = -20001 then
+        dbms_output.put_line('Detecta OK PLATOS_NO_DISPONIBLES: '||sqlerrm);
+      else
+        dbms_output.put_line('Mal no detecta PLATOS_NO_DISPONIBLES: '||sqlerrm);
+      end if;
+  end;
+  /*
   --Caso 5: Personal de servicio ya tiene 5 pedidos activos y se le asigna otro pedido devuelve el error -20003
   begin
     inicializa_test;
