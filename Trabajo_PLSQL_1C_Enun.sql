@@ -182,7 +182,16 @@ end;
 -- SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 -- Esto evita que dos transacciones vean la misma información al mismo tiempo.
 -- * P4.3
---
+/* No se puede asegurar al 100% que el pedido se realizará correctamente en el paso 4 solo con las comprobaciones de los pasos 1 y 2, 
+   porque en entornos concurrentes siempre existe el riesgo de que otro proceso modifique los datos entre una verificación y la ejecución del pedido. 
+   Esto se debe a un problema conocido como condición de carrera.
+   1. Si dos transacciones leen los pedidos activos al mismo tiempo antes de que alguna haga la actualización, ambas podrían concluir que el empleado tiene disponibilidad.
+   Luego, ambas intentarían asignarle pedidos simultáneamente, superando el límite permitido.
+   2. Supongamos que en el paso 2 verificamos que el empleado tiene 4 pedidos activos y, por lo tanto, podemos asignarle uno más. 
+   Pero, antes de que nuestra transacción haga la actualización, otra transacción que también verificó lo mismo logra completar su commit primero, asignando un pedido al mismo empleado.
+
+   Cuando nuestra transacción intenta hacer su commit, el empleado ya tiene 5 pedidos activos (o más), lo que lleva a una inconsistencia.
+*/
 -- * P4.4
 --
 -- * P4.5
