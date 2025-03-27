@@ -256,25 +256,14 @@ end;
 
    Se usan códigos de error personalizados (-20001, -20002, -20003) para identificar el tipo exacto de problema.
    
-   2. Sincronización de Concurrencia
-   Para evitar problemas cuando varias transacciones acceden a la misma información simultáneamente, se han implementado técnicas de control de concurrencia:
-✅   Uso de bloqueos (SELECT ... FOR UPDATE):
-
-   Antes de actualizar pedidos_activos, la fila del personal de servicio se bloquea, evitando que otras transacciones accedan a la misma información al mismo tiempo. Esto previene condiciones de carrera.
-✅   Manejo de errores de integridad (CHECK constraint):
-
-   Se captura la excepción generada por la restricción CHECK y se lanza un error controlado si se supera el límite.
-   
    ¿Cómo se ve reflejada en el código?
    1. Validaciones antes de operaciones críticas (if para comprobar platos, existencia, disponibilidad).
 
    2. Uso de excepciones personalizadas (RAISE_APPLICATION_ERROR).
 
-   3. Bloqueo explícito de registros en concurrencia (SELECT ... FOR UPDATE).
+   3. Respaldo en restricciones de base de datos (CHECK (pedidos_activos ≤ 5)).
 
-   4. Respaldo en restricciones de base de datos (CHECK (pedidos_activos ≤ 5)).
-
-   5. Manejo de excepciones SQL (WHEN OTHERS THEN ... IF SQLCODE = -2290 THEN ...).
+   4. Manejo de excepciones SQL (WHEN OTHERS THEN ... IF SQLCODE = -2290 THEN ...).
 */ 
 
 
