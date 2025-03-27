@@ -159,8 +159,28 @@ end;
 -- Para garantizar que un miembro del personal de servicio no supere el límite, se debería agregar una consulta que verifique el número de pedidos activos antes de asignarle un nuevo pedido.
 -- Esto permitiría capturar la condición antes de insertar el pedido en la base de datos.
 -- Sin esta verificación, el procedimiento no está realmente garantizando que el personal no supere el límite de pedidos activos.
+-- Y aqui te dejo el fragmento de código:
 -- * P4.2
---
+-- Para evitar que dos transacciones concurrentes asignen un pedido al mismo miembro del personal de servicio y superen el límite de pedidos activos, se deben aplicar mecanismos de control de concurrencia.
+-- 1. Uso de SELECT ... FOR UPDATE (Bloqueo de fila)
+/* DECLARE pedidos_actuales INTEGER;
+   BEGIN
+    -- Bloqueamos la fila del personal seleccionado
+    SELECT pedidos_activos INTO pedidos_actuales 
+    FROM personal_servicio 
+    WHERE id_personal = arg_id_personal
+    FOR UPDATE;  -- 🔒 Bloquea la fila hasta que se haga COMMIT o ROLLBACK
+
+    IF pedidos_actuales >= 5 THEN
+        raise MUCHO_OCUPADO;
+    END IF;
+
+    -- Continuar con la lógica de inserción del pedido
+    ...
+*/
+-- 2. Uso de Aislamiento de Transacciones (SERIALIZABLE)
+-- SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+-- Esto evita que dos transacciones vean la misma información al mismo tiempo.
 -- * P4.3
 --
 -- * P4.4
