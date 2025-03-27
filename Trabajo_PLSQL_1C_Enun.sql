@@ -154,7 +154,11 @@ end;
 ------ Deja aquí tus respuestas a las preguntas del enunciado:
 -- NO SE CORREGIRÁN RESPUESTAS QUE NO ESTÉN AQUÍ (utiliza el espacio que necesites apra cada una)
 -- * P4.1
---
+-- En el código proporcionado, existe una restricción en la tabla personal_servicio que limita la cantidad de pedidos activos que puede tener un miembro del personal de servicio:
+-- pedidos_activos INTEGER DEFAULT 0 CHECK (pedidos_activos <= 5)
+-- Para garantizar que un miembro del personal de servicio no supere el límite, se debería agregar una consulta que verifique el número de pedidos activos antes de asignarle un nuevo pedido.
+-- Esto permitiría capturar la condición antes de insertar el pedido en la base de datos.
+-- Sin esta verificación, el procedimiento no está realmente garantizando que el personal no supere el límite de pedidos activos.
 -- * P4.2
 --
 -- * P4.3
