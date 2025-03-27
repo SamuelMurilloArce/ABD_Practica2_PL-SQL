@@ -186,6 +186,21 @@ end;
 -- Esto permitiría capturar la condición antes de insertar el pedido en la base de datos.
 -- Sin esta verificación, el procedimiento no está realmente garantizando que el personal no supere el límite de pedidos activos.
 -- Y aqui te dejo el fragmento de código:
+/*
+BEGIN
+        SELECT pedidos_activos into disp_servicio
+        FROM personal_servicio
+        WHERE id_personal = arg_id_personal;
+    END;
+
+    if disp_servicio >= 5 then
+        raise MUCHO_OCUPADO;
+    else
+        update personal_servicio
+        set pedidos_activos = pedidos_activos+1
+        where id_personal = arg_id_personal;
+    end if;
+*/
 -- * P4.2
 -- Para evitar que dos transacciones concurrentes asignen un pedido al mismo miembro del personal de servicio y superen el límite de pedidos activos, se deben aplicar mecanismos de control de concurrencia.
 -- 1. Uso de SELECT ... FOR UPDATE (Bloqueo de fila)
